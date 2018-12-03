@@ -3,6 +3,8 @@ package com.guichaguri.trackplayer.service;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
+
 import com.facebook.react.bridge.Promise;
 import com.guichaguri.trackplayer.service.player.ExoPlayback;
 
@@ -11,12 +13,10 @@ import com.guichaguri.trackplayer.service.player.ExoPlayback;
  */
 public class MusicBinder extends Binder {
 
-    private final MusicService service;
     private final MusicManager manager;
     private final Handler handler;
 
-    public MusicBinder(MusicService service, MusicManager manager) {
-        this.service = service;
+    public MusicBinder(MusicManager manager) {
         this.manager = manager;
         this.handler = new Handler();
     }
@@ -29,7 +29,7 @@ public class MusicBinder extends Binder {
         ExoPlayback playback = manager.getPlayback();
 
         // TODO remove?
-        if(playback == null) {
+        if (playback == null) {
             playback = manager.createLocalPlayback(new Bundle());
             manager.switchPlayback(playback);
         }
@@ -38,12 +38,14 @@ public class MusicBinder extends Binder {
     }
 
     public void setupPlayer(Bundle bundle, Promise promise) {
-        manager.switchPlayback(manager.createLocalPlayback(bundle));
+        ExoPlayback playback = manager.getPlayback();
+        if (playback == null) {
+            manager.switchPlayback(manager.createLocalPlayback(bundle));
+        }
         promise.resolve(null);
     }
 
     public void updateOptions(Bundle bundle) {
-        manager.setStopWithApp(bundle.getBoolean("stopWithApp"));
         manager.getMetadata().updateOptions(bundle);
     }
 
@@ -53,7 +55,7 @@ public class MusicBinder extends Binder {
 
     public void destroy() {
         handler.removeMessages(0);
-        service.stopSelf();
+        manager.destroy();
     }
 
 }

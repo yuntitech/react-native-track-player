@@ -61,22 +61,20 @@ public class ButtonEvents extends MediaSessionCompat.Callback {
 
     @Override
     public void onRewind() {
-        Bundle bundle = new Bundle();
-        bundle.putInt("interval", manager.getMetadata().getJumpInterval());
-        service.emit(MusicEvents.BUTTON_JUMP_BACKWARD, bundle);
+        // TODO interval
+        service.emit(MusicEvents.BUTTON_JUMP_BACKWARD, null);
     }
 
     @Override
     public void onFastForward() {
-        Bundle bundle = new Bundle();
-        bundle.putInt("interval", manager.getMetadata().getJumpInterval());
-        service.emit(MusicEvents.BUTTON_JUMP_FORWARD, bundle);
+        // TODO interval
+        service.emit(MusicEvents.BUTTON_JUMP_FORWARD, null);
     }
 
     @Override
     public void onSeekTo(long pos) {
         Bundle bundle = new Bundle();
-        bundle.putDouble("position", Utils.toSeconds(pos));
+        bundle.putLong("position", pos);
         service.emit(MusicEvents.BUTTON_SEEK_TO, bundle);
     }
 

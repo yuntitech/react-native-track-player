@@ -42,7 +42,7 @@ public class MusicService extends HeadlessJsTaskService {
     @Override
     public IBinder onBind(Intent intent) {
         if(Utils.CONNECT_INTENT.equals(intent.getAction())) {
-            return new MusicBinder(this, manager);
+            return new MusicBinder(manager);
         }
 
         return super.onBind(intent);
@@ -50,7 +50,8 @@ public class MusicService extends HeadlessJsTaskService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
+        String action = intent.getAction();
+        if (action != null && action.equals("android.intent.action.MEDIA_BUTTON")) {
             MediaButtonReceiver.handleIntent(manager.getMetadata().getSession(), intent);
             return START_NOT_STICKY;
         }
@@ -64,18 +65,7 @@ public class MusicService extends HeadlessJsTaskService {
     public void onDestroy() {
         super.onDestroy();
 
-        if (manager != null) {
-            manager.destroy();
-            manager = null;
-        }
-    }
-
-    @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
-
-        if (manager.shouldStopWithApp()) {
-            stopSelf();
-        }
+        manager.destroy();
+        manager = null;
     }
 }
