@@ -47,7 +47,7 @@ public class MetadataManager {
     private int ratingType = RatingCompat.RATING_NONE;
     private long actions = 0;
     private long compactActions = 0;
-    private NotificationCompat.Builder builder;
+//    private NotificationCompat.Builder builder;
     private String notificationChannel = "trackplayer";
 
     private Action previousAction, rewindAction, playAction, pauseAction, stopAction, forwardAction, nextAction;
@@ -56,35 +56,35 @@ public class MetadataManager {
         this.service = service;
         this.manager = manager;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(notificationChannel, "notification service", NotificationManager.IMPORTANCE_DEFAULT);
-            channel.setShowBadge(false);
-            channel.setSound(null, null);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            NotificationChannel channel = new NotificationChannel(notificationChannel, "notification service", NotificationManager.IMPORTANCE_DEFAULT);
+//            channel.setShowBadge(false);
+//            channel.setSound(null, null);
+//
+//            NotificationManager not = (NotificationManager) service.getSystemService(Context.NOTIFICATION_SERVICE);
+//            not.createNotificationChannel(channel);
+//        }
 
-            NotificationManager not = (NotificationManager) service.getSystemService(Context.NOTIFICATION_SERVICE);
-            not.createNotificationChannel(channel);
-        }
-
-        this.builder = new NotificationCompat.Builder(service, notificationChannel);
+//        this.builder = new NotificationCompat.Builder(service, notificationChannel);
         this.session = new MediaSessionCompat(service, "TrackPlayer", null, null);
 
         session.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS |
                 MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
         session.setCallback(new ButtonEvents(service, manager));
 
-        Context context = service.getApplicationContext();
-        String packageName = context.getPackageName();
-        Intent openApp = context.getPackageManager().getLaunchIntentForPackage(packageName);
-        builder.setContentIntent(PendingIntent.getActivity(context, 0, openApp, 0));
-
-        builder.setSmallIcon(R.drawable.play);
-        builder.setCategory(NotificationCompat.CATEGORY_TRANSPORT);
-
-        // Stops the playback when the notification is swiped away
-        builder.setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(service, PlaybackStateCompat.ACTION_STOP));
-
-        // Make it visible in the lockscreen
-        builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+//        Context context = service.getApplicationContext();
+//        String packageName = context.getPackageName();
+//        Intent openApp = context.getPackageManager().getLaunchIntentForPackage(packageName);
+//        builder.setContentIntent(PendingIntent.getActivity(context, 0, openApp, 0));
+//
+//        builder.setSmallIcon(R.drawable.play);
+//        builder.setCategory(NotificationCompat.CATEGORY_TRANSPORT);
+//
+//        // Stops the playback when the notification is swiped away
+//        builder.setDeleteIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(service, PlaybackStateCompat.ACTION_STOP));
+//
+//        // Make it visible in the lockscreen
+//        builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
     }
 
     public MediaSessionCompat getSession() {
@@ -134,11 +134,11 @@ public class MetadataManager {
             }
         }
 
-        // Update the color
-        builder.setColor(options.getInt("color", NotificationCompat.COLOR_DEFAULT));
-
-        // Update the icon
-        builder.setSmallIcon(getIcon(options, "icon", R.drawable.play));
+//        // Update the color
+//        builder.setColor(options.getInt("color", NotificationCompat.COLOR_DEFAULT));
+//
+//        // Update the icon
+//        builder.setSmallIcon(getIcon(options, "icon", R.drawable.play));
 
         // Update the rating type
         ratingType = options.getInt("ratingType", RatingCompat.RATING_NONE);
@@ -170,7 +170,7 @@ public class MetadataManager {
         MediaMetadataCompat.Builder metadata = track.toMediaMetadata();
 
         metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap);
-        builder.setLargeIcon(bitmap);
+//        builder.setLargeIcon(bitmap);
 
         session.setMetadata(metadata.build());
         updateNotification();
@@ -184,29 +184,29 @@ public class MetadataManager {
     public void updateMetadata(final Track track) {
         final MediaMetadataCompat.Builder metadata = track.toMediaMetadata();
 
-        if (track.artwork != null) {
-            Glide.with(service.getApplicationContext())
-                    .asBitmap()
-                    .load(track.artwork)
-                    .into(new SimpleTarget<Bitmap>() {
-                        @Override
-                        public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
-                            metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, resource);
-                            builder.setLargeIcon(resource);
-
-                            builder.setContentTitle(track.title);
-                            builder.setContentText(track.artist);
-                            builder.setSubText(track.album);
-
-                            session.setMetadata(metadata.build());
-                            updateNotification();
-                        }
-                    });
-        }
-
-        builder.setContentTitle(track.title);
-        builder.setContentText(track.artist);
-        builder.setSubText(track.album);
+//        if (track.artwork != null) {
+//            Glide.with(service.getApplicationContext())
+//                    .asBitmap()
+//                    .load(track.artwork)
+//                    .into(new SimpleTarget<Bitmap>() {
+//                        @Override
+//                        public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
+//                            metadata.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, resource);
+//                            builder.setLargeIcon(resource);
+//
+//                            builder.setContentTitle(track.title);
+//                            builder.setContentText(track.artist);
+//                            builder.setSubText(track.album);
+//
+//                            session.setMetadata(metadata.build());
+//                            updateNotification();
+//                        }
+//                    });
+//        }
+//
+//        builder.setContentTitle(track.title);
+//        builder.setContentText(track.artist);
+//        builder.setSubText(track.album);
 
         session.setMetadata(metadata.build());
         updateNotification();
@@ -219,44 +219,44 @@ public class MetadataManager {
      */
     public void updatePlayback(ExoPlayback playback) {
         int state = playback.getState();
-        boolean playing = Utils.isPlaying(state);
-        MediaStyle style = new MediaStyle();
-        List<Integer> compact = new ArrayList<>();
-        builder.mActions.clear();
-
-        // Adds the media buttons to the notification
-
-        addAction(previousAction, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS, compact);
-        addAction(rewindAction, PlaybackStateCompat.ACTION_REWIND, compact);
-
-        if (playing) {
-            addAction(pauseAction, PlaybackStateCompat.ACTION_PAUSE, compact);
-            style.setShowCancelButton(false);
-        } else {
-            addAction(playAction, PlaybackStateCompat.ACTION_PLAY, compact);
-
-            // Shows the cancel button on pre-lollipop versions due to a bug
-            style.setShowCancelButton(true);
-            style.setCancelButtonIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(service, PlaybackStateCompat.ACTION_STOP));
-        }
-
-        addAction(stopAction, PlaybackStateCompat.ACTION_STOP, compact);
-        addAction(forwardAction, PlaybackStateCompat.ACTION_FAST_FORWARD, compact);
-        addAction(nextAction, PlaybackStateCompat.ACTION_SKIP_TO_NEXT, compact);
-
-        // Links the media session
-        style.setMediaSession(session.getSessionToken());
-
-        // Updates the compact media buttons for the notification
-        if (!compact.isEmpty()) {
-            int[] compactIndexes = new int[compact.size()];
-
-            for (int i = 0; i < compact.size(); i++) compactIndexes[i] = compact.get(i);
-
-            style.setShowActionsInCompactView(compactIndexes);
-        }
-
-        builder.setStyle(style);
+//        boolean playing = Utils.isPlaying(state);
+//        MediaStyle style = new MediaStyle();
+//        List<Integer> compact = new ArrayList<>();
+//        builder.mActions.clear();
+//
+//        // Adds the media buttons to the notification
+//
+//        addAction(previousAction, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS, compact);
+//        addAction(rewindAction, PlaybackStateCompat.ACTION_REWIND, compact);
+//
+//        if (playing) {
+//            addAction(pauseAction, PlaybackStateCompat.ACTION_PAUSE, compact);
+//            style.setShowCancelButton(false);
+//        } else {
+//            addAction(playAction, PlaybackStateCompat.ACTION_PLAY, compact);
+//
+//            // Shows the cancel button on pre-lollipop versions due to a bug
+//            style.setShowCancelButton(true);
+//            style.setCancelButtonIntent(MediaButtonReceiver.buildMediaButtonPendingIntent(service, PlaybackStateCompat.ACTION_STOP));
+//        }
+//
+//        addAction(stopAction, PlaybackStateCompat.ACTION_STOP, compact);
+//        addAction(forwardAction, PlaybackStateCompat.ACTION_FAST_FORWARD, compact);
+//        addAction(nextAction, PlaybackStateCompat.ACTION_SKIP_TO_NEXT, compact);
+//
+//        // Links the media session
+//        style.setMediaSession(session.getSessionToken());
+//
+//        // Updates the compact media buttons for the notification
+//        if (!compact.isEmpty()) {
+//            int[] compactIndexes = new int[compact.size()];
+//
+//            for (int i = 0; i < compact.size(); i++) compactIndexes[i] = compact.get(i);
+//
+//            style.setShowActionsInCompactView(compactIndexes);
+//        }
+//
+//        builder.setStyle(style);
 
         // Updates the media session state
         PlaybackStateCompat.Builder pb = new PlaybackStateCompat.Builder();
@@ -291,22 +291,22 @@ public class MetadataManager {
     }
 
     private void updateNotification() {
-        if (manager.getPlayback() == null) {
-            return;
-        }
-        int state = manager.getPlayback().getState();
-        if (Utils.isStopped(state)) {
-            removeNotifications();
-            return;
-        }
-
-        Notification n = builder.build();
-
-        if (foreground) {
-            service.startForeground(1, n);
-        } else {
-            NotificationManagerCompat.from(service).notify(1, n);
-        }
+//        if (manager.getPlayback() == null) {
+//            return;
+//        }
+//        int state = manager.getPlayback().getState();
+//        if (Utils.isStopped(state)) {
+//            removeNotifications();
+//            return;
+//        }
+//
+//        Notification n = builder.build();
+//
+//        if (foreground) {
+//            service.startForeground(1, n);
+//        } else {
+//            NotificationManagerCompat.from(service).notify(1, n);
+//        }
     }
 
     private int getIcon(Bundle options, String propertyName, int defaultIcon) {
@@ -329,10 +329,10 @@ public class MetadataManager {
     }
 
     private void addAction(Action action, long id, List<Integer> compact) {
-        if (action == null) return;
-
-        if ((compactActions & id) != 0) compact.add(builder.mActions.size());
-        builder.mActions.add(action);
+//        if (action == null) return;
+//
+//        if ((compactActions & id) != 0) compact.add(builder.mActions.size());
+//        builder.mActions.add(action);
     }
 
 }
