@@ -11,8 +11,8 @@ import android.support.v4.media.session.MediaSessionCompat.QueueItem;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.dash.DashMediaSource;
-import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
+//import com.google.android.exoplayer2.source.dash.DashMediaSource;
+//import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource;
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
@@ -165,9 +165,9 @@ public class Track {
 //        }
 
         switch (type) {
-            case DASH:
-                return new DashMediaSource.Factory(new DefaultDashChunkSource.Factory(ds), ds)
-                        .createMediaSource(uri);
+//            case DASH:
+//                return new DashMediaSource.Factory(new DefaultDashChunkSource.Factory(ds), ds)
+//                        .createMediaSource(uri);
             case HLS:
                 return new HlsMediaSource.Factory(ds)
                         .createMediaSource(uri);

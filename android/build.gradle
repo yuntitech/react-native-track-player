@@ -55,12 +55,12 @@ dependencies {
     // ExoPlayer Core
     implementation 'com.google.android.exoplayer:exoplayer-core:2.8.4'
 
-    // ExoPlayer DASH
-    if (dash) {
-        implementation 'com.google.android.exoplayer:exoplayer-dash:2.8.4'
-    } else {
-        compileOnly 'com.google.android.exoplayer:exoplayer-dash:2.8.4'
-    }
+//    // ExoPlayer DASH
+//    if (dash) {
+//        implementation 'com.google.android.exoplayer:exoplayer-dash:2.8.4'
+//    } else {
+//        compileOnly 'com.google.android.exoplayer:exoplayer-dash:2.8.4'
+//    }
 
     // ExoPlayer HLS
     if (hls) {
