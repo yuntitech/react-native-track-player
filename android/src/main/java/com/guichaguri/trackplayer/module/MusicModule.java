@@ -9,9 +9,15 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.media.RatingCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
-import android.util.Log;
 
-import com.facebook.react.bridge.*;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.ReactContextBaseJavaModule;
+import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
 import com.google.android.exoplayer2.C;
 import com.guichaguri.trackplayer.service.MusicBinder;
 import com.guichaguri.trackplayer.service.MusicService;
@@ -485,6 +491,16 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
             @Override
             public void run() {
                 callback.resolve(binder.getPlayback().getState());
+            }
+        });
+    }
+
+    @ReactMethod
+    public void cancelNotifications() {
+        waitForConnection(new Runnable() {
+            @Override
+            public void run() {
+                binder.cancelNotifications();
             }
         });
     }
