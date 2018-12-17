@@ -74,6 +74,7 @@ public class Track {
     public RatingCompat rating;
 
     public final long queueId;
+    public boolean decrypt;
 
     public Track(Context context, Bundle bundle, int ratingType) {
         id = bundle.getString("id");
@@ -99,6 +100,7 @@ public class Track {
         duration = Utils.toMillis(bundle.getDouble("duration", 0));
 
         rating = Utils.getRating(bundle, "rating", ratingType);
+        decrypt = bundle.getBoolean("decrypt", true);
 
         queueId = System.currentTimeMillis();
         originalItem = bundle;
@@ -153,7 +155,7 @@ public class Track {
         );
         if (Utils.isLocal(uri)) {
             return new ExtractorMediaSource(uri,
-                    new FileDecryptionDataSourceFactory(ctx.getApplicationContext(), null),
+                    new FileDecryptionDataSourceFactory(ctx.getApplicationContext(), null, decrypt),
                     new DefaultExtractorsFactory(),
                     null, null);
         }

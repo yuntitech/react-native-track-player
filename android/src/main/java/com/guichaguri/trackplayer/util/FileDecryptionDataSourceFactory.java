@@ -14,19 +14,21 @@ public final class FileDecryptionDataSourceFactory implements DataSource.Factory
 
     private final TransferListener<? super FileDecryptionDataSource> listener;
     private Context mContext;
+    private boolean mDecrypt;
 
     public FileDecryptionDataSourceFactory(Context context) {
-        this(context, null);
+        this(context, null, true);
     }
 
-    public FileDecryptionDataSourceFactory(Context context, TransferListener<? super FileDecryptionDataSource> listener) {
+    public FileDecryptionDataSourceFactory(Context context, TransferListener<? super FileDecryptionDataSource> listener, boolean decrypt) {
         this.listener = listener;
         this.mContext = context;
+        this.mDecrypt = decrypt;
     }
 
     @Override
     public DataSource createDataSource() {
-        return new FileDecryptionDataSource(mContext,listener);
+        return new FileDecryptionDataSource(mContext, listener, mDecrypt);
     }
 
 }

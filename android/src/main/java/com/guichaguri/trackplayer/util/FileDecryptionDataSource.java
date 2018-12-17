@@ -41,20 +41,22 @@ public final class FileDecryptionDataSource implements DataSource {
     private Uri uri;
     private long bytesRemaining;
     private boolean opened;
+    private boolean mDecrypt;
 
     public FileDecryptionDataSource(Context context) {
-        this(context, null);
+        this(context, null, true);
     }
 
     /**
      * @param listener An optional listener.
      */
-    public FileDecryptionDataSource(Context context, TransferListener<? super FileDecryptionDataSource> listener) {
+    public FileDecryptionDataSource(Context context, TransferListener<? super FileDecryptionDataSource> listener, boolean decrypt) {
         this.listener = listener;
         try {
             Field field = context.getClass().getDeclaredField("mTrackPlayer");
             field.setAccessible(true);
             mVideoPackage = (TrackPlayer) field.get(context);
+            this.mDecrypt = decrypt;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -93,7 +95,7 @@ public final class FileDecryptionDataSource implements DataSource {
             int bytesRead;
             try {
                 bytesRead = file.read(buffer, offset, (int) Math.min(bytesRemaining, readLength));
-                if (mVideoPackage != null) {
+                if (mVideoPackage != null && this.mDecrypt) {
                     mVideoPackage.decrypt(buffer, offset, (int) Math.min(bytesRemaining, readLength));
                 }
             } catch (IOException e) {
