@@ -143,7 +143,7 @@ public class MetadataManager {
         ratingType = options.getInt("ratingType", RatingCompat.RATING_NONE);
         session.setRatingType(ratingType);
 
-        updateNotification();
+//        updateNotification();
     }
 
     public int getRatingType() {
