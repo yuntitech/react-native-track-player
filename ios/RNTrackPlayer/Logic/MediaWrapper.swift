@@ -169,7 +169,7 @@ class MediaWrapper: AudioPlayerDelegate {
         if (currentIndex == -1) { currentIndex = 0 }
         
         // resume playback if it was paused and check currentIndex wasn't changed by a skip/previous
-        if player.state == .paused && currentTrack?.id == queue[currentIndex].id {
+        if player.state == .paused && player.currentItem?.id == queue[currentIndex].id {
             player.resume()
             return
         }
