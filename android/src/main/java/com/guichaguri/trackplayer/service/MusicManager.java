@@ -39,7 +39,7 @@ public class MusicManager implements OnAudioFocusChangeListener {
     private final WakeLock wakeLock;
     private final WifiLock wifiLock;
 
-    private MetadataManager metadata;
+//    private MetadataManager metadata;
     private ExoPlayback playback;
 
     @RequiresApi(26)
@@ -49,7 +49,7 @@ public class MusicManager implements OnAudioFocusChangeListener {
     @SuppressLint("InvalidWakeLockTag")
     public MusicManager(MusicService service) {
         this.service = service;
-        this.metadata = new MetadataManager(service, this);
+//        this.metadata = new MetadataManager(service, this);
 
         PowerManager powerManager = (PowerManager) service.getSystemService(Context.POWER_SERVICE);
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "track-player-wake-lock");
@@ -66,7 +66,7 @@ public class MusicManager implements OnAudioFocusChangeListener {
     }
 
     public MetadataManager getMetadata() {
-        return metadata;
+        return null;
     }
 
     public void switchPlayback(ExoPlayback playback) {
@@ -116,7 +116,7 @@ public class MusicManager implements OnAudioFocusChangeListener {
             }
         }
 
-        metadata.setForeground(true, true);
+//        metadata.setForeground(true, true);
     }
 
     public void onPause() {
@@ -128,7 +128,7 @@ public class MusicManager implements OnAudioFocusChangeListener {
 
         abandonFocus();
 
-        metadata.setForeground(false, true);
+//        metadata.setForeground(false, true);
     }
 
     public void onStop() {
@@ -140,7 +140,7 @@ public class MusicManager implements OnAudioFocusChangeListener {
 
         abandonFocus();
 
-        metadata.setForeground(false, false);
+//        metadata.setForeground(false, false);
     }
 
     public void onStateChange(int state) {
@@ -149,13 +149,13 @@ public class MusicManager implements OnAudioFocusChangeListener {
         Bundle bundle = new Bundle();
         bundle.putInt("state", state);
         service.emit(MusicEvents.PLAYBACK_STATE, bundle);
-        metadata.updatePlayback(playback);
+//        metadata.updatePlayback(playback);
     }
 
     public void onTrackUpdate(Track previous, long prevPos, Track next) {
         Log.d(Utils.LOG, "onTrackUpdate");
 
-        if (next != null) metadata.updateMetadata(next);
+//        if (next != null) metadata.updateMetadata(next);
 
         Bundle bundle = new Bundle();
         bundle.putString("track", previous != null ? previous.id : null);
@@ -165,7 +165,7 @@ public class MusicManager implements OnAudioFocusChangeListener {
     }
 
     public void onReset() {
-        metadata.removeNotifications();
+//        metadata.removeNotifications();
     }
 
     public void onEnd(Track previous, long prevPos) {
@@ -268,7 +268,7 @@ public class MusicManager implements OnAudioFocusChangeListener {
         if (playback != null) playback.destroy();
 
         // Release the metadata resources
-        metadata.destroy();
+//        metadata.destroy();
 
         // Release the locks
         if (wifiLock.isHeld()) wifiLock.release();

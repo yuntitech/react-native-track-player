@@ -52,7 +52,7 @@ public class MusicService extends HeadlessJsTaskService {
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent.getAction();
         if (action != null && action.equals("android.intent.action.MEDIA_BUTTON")) {
-            MediaButtonReceiver.handleIntent(manager.getMetadata().getSession(), intent);
+//            MediaButtonReceiver.handleIntent(manager.getMetadata().getSession(), intent);
             return START_NOT_STICKY;
         }
 

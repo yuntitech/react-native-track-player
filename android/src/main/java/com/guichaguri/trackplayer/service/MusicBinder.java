@@ -3,6 +3,7 @@ package com.guichaguri.trackplayer.service;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.media.RatingCompat;
 
 import com.facebook.react.bridge.Promise;
 import com.guichaguri.trackplayer.service.player.ExoPlayback;
@@ -45,11 +46,12 @@ public class MusicBinder extends Binder {
     }
 
     public void updateOptions(Bundle bundle) {
-        manager.getMetadata().updateOptions(bundle);
+//        manager.getMetadata().updateOptions(bundle);
     }
 
     public int getRatingType() {
-        return manager.getMetadata().getRatingType();
+//        return manager.getMetadata().getRatingType();
+        return RatingCompat.RATING_NONE;
     }
 
     public void destroy() {
@@ -58,6 +60,6 @@ public class MusicBinder extends Binder {
     }
 
     public void cancelNotifications() {
-        manager.getMetadata().removeNotifications();
+//        manager.getMetadata().removeNotifications();
     }
 }
