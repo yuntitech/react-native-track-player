@@ -234,7 +234,7 @@ class MediaWrapper: AudioPlayerDelegate {
     }
     
     func audioPlayer(_ audioPlayer: AudioPlayer, didFinishPlaying item: Track, at position: TimeInterval?) {
-        if item.skipped { return }
+        //if item.skipped { return }
         if (!playNext()) {
             delegate?.playerExhaustedQueue(trackId: item.id, time: position)
         }
