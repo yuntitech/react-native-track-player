@@ -1,6 +1,8 @@
 package com.guichaguri.trackplayer.service;
 
+import android.app.Notification;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
@@ -17,6 +19,14 @@ import javax.annotation.Nullable;
 public class MusicService extends HeadlessJsTaskService {
 
     private MusicManager manager;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForeground(1, new Notification());
+        }
+    }
 
     @Nullable
     @Override
