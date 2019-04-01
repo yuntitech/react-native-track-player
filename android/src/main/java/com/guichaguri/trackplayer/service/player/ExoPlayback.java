@@ -356,6 +356,7 @@ public class ExoPlayback implements EventListener {
     @Override
     public void onSeekProcessed() {
         // Finished seeking
+        manager.onStateChange(12);
     }
 
     private void seekToDefaultPosition(int windowIndex) {
