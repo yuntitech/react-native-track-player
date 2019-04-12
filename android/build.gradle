@@ -15,12 +15,12 @@ apply plugin: 'com.android.library'
 boolean dash = false, hls = false, smoothstreaming = false
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.3"
+    compileSdkVersion 27
+    buildToolsVersion "27.0.3"
 
     defaultConfig {
         minSdkVersion 16 // RN's minimum version
-        targetSdkVersion 26
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
         ndk {
@@ -31,8 +31,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
@@ -53,35 +53,35 @@ dependencies {
     implementation 'com.facebook.react:react-native:+'
 
     // ExoPlayer Core
-    implementation 'com.google.android.exoplayer:exoplayer-core:2.8.4'
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.9.2'
 
-//    // ExoPlayer DASH
-//    if (dash) {
-//        implementation 'com.google.android.exoplayer:exoplayer-dash:2.8.4'
-//    } else {
-//        compileOnly 'com.google.android.exoplayer:exoplayer-dash:2.8.4'
-//    }
+    // ExoPlayer DASH
+    if (dash) {
+        implementation 'com.google.android.exoplayer:exoplayer-dash:2.9.2'
+    } else {
+        compileOnly 'com.google.android.exoplayer:exoplayer-dash:2.9.2'
+    }
 
     // ExoPlayer HLS
     if (hls) {
-        implementation 'com.google.android.exoplayer:exoplayer-hls:2.8.4'
+        implementation 'com.google.android.exoplayer:exoplayer-hls:2.9.2'
     } else {
-        compileOnly 'com.google.android.exoplayer:exoplayer-hls:2.8.4'
+        compileOnly 'com.google.android.exoplayer:exoplayer-hls:2.9.2'
     }
 
     // ExoPlayer SmoothStreaming
     if (smoothstreaming) {
-        implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.8.4'
+        implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.9.2'
     } else {
-        compileOnly 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.8.4'
+        compileOnly 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.9.2'
     }
 
     // Make sure we're using at least the support library 27.1.1
-    implementation 'com.android.support:support-compat:26.1.0'
-    implementation 'com.android.support:support-media-compat:26.1.0'
+    implementation 'com.android.support:support-compat:27.1.1'
+    implementation 'com.android.support:support-media-compat:27.1.1'
 
-    implementation 'com.github.bumptech.glide:glide:4.3.1'
-    compile('com.google.android.exoplayer:extension-okhttp:2.8.4') {
+    implementation 'com.github.bumptech.glide:glide:4.7.1'
+    compile('com.google.android.exoplayer:extension-okhttp:2.9.2') {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
 }

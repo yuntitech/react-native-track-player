@@ -11,25 +11,24 @@ import android.support.v4.media.session.MediaSessionCompat.QueueItem;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
-//import com.google.android.exoplayer2.source.dash.DashMediaSource;
-//import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
+import com.google.android.exoplayer2.source.dash.DashMediaSource;
+import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource;
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
+import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
-import com.google.android.exoplayer2.upstream.cache.Cache;
-import com.google.android.exoplayer2.upstream.cache.CacheDataSource;
-import com.google.android.exoplayer2.upstream.cache.CacheDataSourceFactory;
+import com.google.android.exoplayer2.upstream.RawResourceDataSource;
 import com.google.android.exoplayer2.util.Util;
 import com.guichaguri.trackplayer.service.Utils;
-import com.guichaguri.trackplayer.service.metadata.SimpleCacheManager;
+import com.guichaguri.trackplayer.service.player.ExoPlayback;
+import com.guichaguri.trackplayer.service.player.LocalPlayback;
 import com.guichaguri.trackplayer.util.FileDecryptionDataSourceFactory;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,9 +42,9 @@ public class Track {
     public static List<Track> createTracks(Context context, List objects, int ratingType) {
         List<Track> tracks = new ArrayList<>();
 
-        for (Object o : objects) {
-            if (o instanceof Bundle) {
-                tracks.add(new Track(context, (Bundle) o, ratingType));
+        for(Object o : objects) {
+            if(o instanceof Bundle) {
+                tracks.add(new Track(context, (Bundle)o, ratingType));
             } else {
                 return null;
             }
@@ -56,9 +55,11 @@ public class Track {
 
     public String id;
     public Uri uri;
+    public int resourceId;
 
     public TrackType type = TrackType.DEFAULT;
 
+    public String contentType;
     public String userAgent;
 
     public Uri artwork;
@@ -78,17 +79,25 @@ public class Track {
 
     public Track(Context context, Bundle bundle, int ratingType) {
         id = bundle.getString("id");
-        uri = Utils.getUri(context, bundle, "url");
+
+        resourceId = Utils.getRawResourceId(context, bundle, "url");
+
+        if(resourceId == 0) {
+            uri = Utils.getUri(context, bundle, "url");
+        } else {
+            uri = RawResourceDataSource.buildRawResourceUri(resourceId);
+        }
 
         String trackType = bundle.getString("type", "default");
 
-        for (TrackType t : TrackType.values()) {
-            if (t.name.equalsIgnoreCase(trackType)) {
+        for(TrackType t : TrackType.values()) {
+            if(t.name.equalsIgnoreCase(trackType)) {
                 type = t;
                 break;
             }
         }
 
+        contentType = bundle.getString("contentType");
         userAgent = bundle.getString("userAgent");
         artwork = Utils.getUri(context, bundle, "artwork");
 
@@ -110,7 +119,7 @@ public class Track {
         MediaMetadataCompat.Builder builder = new MediaMetadataCompat.Builder();
 
         builder.putString(METADATA_KEY_TITLE, title);
-        builder.putString(METADATA_KEY_ARTIST, title);
+        builder.putString(METADATA_KEY_ARTIST, artist);
         builder.putString(METADATA_KEY_ALBUM, album);
         builder.putString(METADATA_KEY_DATE, date);
         builder.putString(METADATA_KEY_GENRE, genre);
@@ -123,8 +132,9 @@ public class Track {
             builder.putString(METADATA_KEY_ART_URI, artwork.toString());
         }
 
-        // TODO
-//        builder.putRating(METADATA_KEY_RATING, rating);
+        if (rating != null) {
+            builder.putRating(METADATA_KEY_RATING, rating);
+        }
 
         return builder;
     }
@@ -141,35 +151,56 @@ public class Track {
         return new QueueItem(descr, queueId);
     }
 
-    public MediaSource toMediaSource(Context ctx, long cacheMaxSize) {
+    public MediaSource toMediaSource(Context ctx, LocalPlayback playback) {
         // Updates the user agent if not set
-        if (userAgent == null || !userAgent.isEmpty())
+        if(userAgent == null || userAgent.isEmpty())
             userAgent = Util.getUserAgent(ctx, "react-native-track-player");
 
-        // Creates a default source factory, enabling cross protocol redirects
-        DataSource.Factory ds = new DefaultHttpDataSourceFactory(
-                userAgent, null,
-                DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
-                true
-        );
-        if (Utils.isLocal(uri)) {
+        DataSource.Factory ds;
+
+        if(resourceId != 0) {
+
+            try {
+                RawResourceDataSource raw = new RawResourceDataSource(ctx);
+                raw.open(new DataSpec(uri));
+                ds = new DataSource.Factory() {
+                    @Override
+                    public DataSource createDataSource() {
+                        return raw;
+                    }
+                };
+            } catch(IOException ex) {
+                // Should never happen
+                throw new RuntimeException(ex);
+            }
+
+        } else if(Utils.isLocal(uri)) {
+
+            // Creates a local source factory
+//            ds = new DefaultDataSourceFactory(ctx, userAgent);
             return new ExtractorMediaSource(uri,
                     new FileDecryptionDataSourceFactory(ctx.getApplicationContext(), null, decrypt),
                     new DefaultExtractorsFactory(),
                     null, null);
-        }
-//        if(cacheMaxSize > 0 && !Utils.isLocal(uri)) {
-//            // Enable caching
-//            File cacheDir = new File(ctx.getCacheDir(), "TrackPlayer");
-//            Cache cache = SimpleCacheManager.INSTANCE.getCache(cacheDir, cacheMaxSize);
-//            ds = new CacheDataSourceFactory(cache, ds, CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR, cacheMaxSize);
-//        }
 
-        switch (type) {
-//            case DASH:
-//                return new DashMediaSource.Factory(new DefaultDashChunkSource.Factory(ds), ds)
-//                        .createMediaSource(uri);
+        } else {
+
+            // Creates a default http source factory, enabling cross protocol redirects
+            ds = new DefaultHttpDataSourceFactory(
+                    userAgent, null,
+                    DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                    DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
+                    true
+            );
+
+            ds = playback.enableCaching(ds);
+
+        }
+
+        switch(type) {
+            case DASH:
+                return new DashMediaSource.Factory(new DefaultDashChunkSource.Factory(ds), ds)
+                        .createMediaSource(uri);
             case HLS:
                 return new HlsMediaSource.Factory(ds)
                         .createMediaSource(uri);
@@ -178,6 +209,7 @@ public class Track {
                         .createMediaSource(uri);
             default:
                 return new ExtractorMediaSource.Factory(ds)
+                        .setExtractorsFactory(new DefaultExtractorsFactory().setConstantBitrateSeekingEnabled(true))
                         .createMediaSource(uri);
         }
     }

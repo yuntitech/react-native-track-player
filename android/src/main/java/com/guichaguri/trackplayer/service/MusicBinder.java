@@ -2,9 +2,6 @@ package com.guichaguri.trackplayer.service;
 
 import android.os.Binder;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.v4.media.RatingCompat;
-
 import com.facebook.react.bridge.Promise;
 import com.guichaguri.trackplayer.service.player.ExoPlayback;
 
@@ -13,23 +10,27 @@ import com.guichaguri.trackplayer.service.player.ExoPlayback;
  */
 public class MusicBinder extends Binder {
 
+    private final MusicService service;
     private final MusicManager manager;
-    private final Handler handler;
 
-    public MusicBinder(MusicManager manager) {
+    public MusicBinder(MusicService service, MusicManager manager) {
+        this.service = service;
         this.manager = manager;
-        this.handler = new Handler();
     }
 
     public void post(Runnable r) {
-        this.handler.post(r);
+        service.handler.post(r);
+    }
+
+    public MusicManager getManager() {
+        return manager;
     }
 
     public ExoPlayback getPlayback() {
         ExoPlayback playback = manager.getPlayback();
 
         // TODO remove?
-        if (playback == null) {
+        if(playback == null) {
             playback = manager.createLocalPlayback(new Bundle());
             manager.switchPlayback(playback);
         }
@@ -38,28 +39,22 @@ public class MusicBinder extends Binder {
     }
 
     public void setupPlayer(Bundle bundle, Promise promise) {
-        ExoPlayback playback = manager.getPlayback();
-        if (playback == null) {
-            manager.switchPlayback(manager.createLocalPlayback(bundle));
-        }
+        manager.switchPlayback(manager.createLocalPlayback(bundle));
         promise.resolve(null);
     }
 
     public void updateOptions(Bundle bundle) {
-//        manager.getMetadata().updateOptions(bundle);
+        manager.setStopWithApp(bundle.getBoolean("stopWithApp", false));
+        manager.getMetadata().updateOptions(bundle);
     }
 
     public int getRatingType() {
-//        return manager.getMetadata().getRatingType();
-        return RatingCompat.RATING_NONE;
+        return manager.getMetadata().getRatingType();
     }
 
     public void destroy() {
-        handler.removeMessages(0);
-        manager.destroy();
+        service.destroy();
+        service.stopSelf();
     }
 
-    public void cancelNotifications() {
-//        manager.getMetadata().removeNotifications();
-    }
 }
