@@ -298,5 +298,6 @@ public abstract class ExoPlayback<T extends Player> implements EventListener {
     @Override
     public void onSeekProcessed() {
         // Finished seeking
+        manager.onStateChange(12);
     }
 }

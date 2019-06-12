@@ -7,6 +7,7 @@ import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.RatingCompat;
 import android.support.v4.media.session.MediaSessionCompat.QueueItem;
+
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -19,6 +20,7 @@ import com.google.android.exoplayer2.upstream.*;
 import com.google.android.exoplayer2.util.Util;
 import com.guichaguri.trackplayer.service.Utils;
 import com.guichaguri.trackplayer.service.player.LocalPlayback;
+import com.guichaguri.trackplayer.util.FileDecryptionDataSourceFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -34,9 +36,9 @@ public class Track {
     public static List<Track> createTracks(Context context, List objects, int ratingType) {
         List<Track> tracks = new ArrayList<>();
 
-        for(Object o : objects) {
-            if(o instanceof Bundle) {
-                tracks.add(new Track(context, (Bundle)o, ratingType));
+        for (Object o : objects) {
+            if (o instanceof Bundle) {
+                tracks.add(new Track(context, (Bundle) o, ratingType));
             } else {
                 return null;
             }
@@ -67,13 +69,14 @@ public class Track {
     public RatingCompat rating;
 
     public final long queueId;
+    public boolean decrypt;
 
     public Track(Context context, Bundle bundle, int ratingType) {
         id = bundle.getString("id");
 
         resourceId = Utils.getRawResourceId(context, bundle, "url");
 
-        if(resourceId == 0) {
+        if (resourceId == 0) {
             uri = Utils.getUri(context, bundle, "url");
         } else {
             uri = RawResourceDataSource.buildRawResourceUri(resourceId);
@@ -81,8 +84,8 @@ public class Track {
 
         String trackType = bundle.getString("type", "default");
 
-        for(TrackType t : TrackType.values()) {
-            if(t.name.equalsIgnoreCase(trackType)) {
+        for (TrackType t : TrackType.values()) {
+            if (t.name.equalsIgnoreCase(trackType)) {
                 type = t;
                 break;
             }
@@ -90,6 +93,7 @@ public class Track {
 
         contentType = bundle.getString("contentType");
         userAgent = bundle.getString("userAgent");
+        decrypt = bundle.getBoolean("decrypt", true);
 
         setMetadata(context, bundle, ratingType);
 
@@ -108,7 +112,7 @@ public class Track {
         duration = Utils.toMillis(bundle.getDouble("duration", 0));
 
         rating = Utils.getRating(bundle, "rating", ratingType);
-        
+
         if (originalItem != null && originalItem != bundle)
             originalItem.putAll(bundle);
     }
@@ -151,12 +155,12 @@ public class Track {
 
     public MediaSource toMediaSource(Context ctx, LocalPlayback playback) {
         // Updates the user agent if not set
-        if(userAgent == null || userAgent.isEmpty())
+        if (userAgent == null || userAgent.isEmpty())
             userAgent = Util.getUserAgent(ctx, "react-native-track-player");
 
         DataSource.Factory ds;
 
-        if(resourceId != 0) {
+        if (resourceId != 0) {
 
             try {
                 RawResourceDataSource raw = new RawResourceDataSource(ctx);
@@ -167,15 +171,19 @@ public class Track {
                         return raw;
                     }
                 };
-            } catch(IOException ex) {
+            } catch (IOException ex) {
                 // Should never happen
                 throw new RuntimeException(ex);
             }
 
-        } else if(Utils.isLocal(uri)) {
+        } else if (Utils.isLocal(uri)) {
 
             // Creates a local source factory
-            ds = new DefaultDataSourceFactory(ctx, userAgent);
+//            ds = new DefaultDataSourceFactory(ctx, userAgent);
+            return new ExtractorMediaSource(uri,
+                    new FileDecryptionDataSourceFactory(ctx.getApplicationContext(), null, decrypt),
+                    new DefaultExtractorsFactory(),
+                    null, null);
 
         } else {
 
@@ -191,7 +199,7 @@ public class Track {
 
         }
 
-        switch(type) {
+        switch (type) {
             case DASH:
                 return new DashMediaSource.Factory(new DefaultDashChunkSource.Factory(ds), ds)
                         .createMediaSource(uri);

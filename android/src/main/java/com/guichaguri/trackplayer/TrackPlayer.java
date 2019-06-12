@@ -25,4 +25,8 @@ public class TrackPlayer implements ReactPackage {
         return Collections.emptyList();
     }
 
+    public void decrypt(byte[] bytes, int offset, int length) {
+
+    }
+
 }
