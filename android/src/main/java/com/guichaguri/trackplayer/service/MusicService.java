@@ -5,13 +5,13 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.media.session.MediaButtonReceiver;
 
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.jstasks.HeadlessJsTaskConfig;
 import javax.annotation.Nullable;
+
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 /**
  * @author Guichaguri
