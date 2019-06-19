@@ -9,14 +9,11 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationCompat.Action;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.RatingCompat;
-import android.support.v4.media.app.NotificationCompat.MediaStyle;
-import android.support.v4.media.session.MediaButtonReceiver;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.target.SimpleTarget;
@@ -30,6 +27,9 @@ import com.guichaguri.trackplayer.service.models.Track;
 import com.guichaguri.trackplayer.service.player.ExoPlayback;
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.core.app.NotificationCompat;
+import androidx.media.session.MediaButtonReceiver;
 
 /**
  * @author Guichaguri
@@ -47,7 +47,7 @@ public class MetadataManager {
     private SimpleTarget<Bitmap> artworkTarget;
     private NotificationCompat.Builder builder;
 
-    private Action previousAction, rewindAction, playAction, pauseAction, stopAction, forwardAction, nextAction;
+    private NotificationCompat.Action previousAction, rewindAction, playAction, pauseAction, stopAction, forwardAction, nextAction;
 
     public MetadataManager(MusicService service, MusicManager manager) {
         this.service = service;
@@ -248,7 +248,7 @@ public class MetadataManager {
         // Prevent the media style from being used in older Huawei devices that don't support custom styles
         if(!Build.MANUFACTURER.toLowerCase().contains("huawei") || Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
-            MediaStyle style = new MediaStyle();
+            androidx.media.app.NotificationCompat.MediaStyle style = new androidx.media.app.NotificationCompat.MediaStyle();
 
             if(playing) {
                 style.setShowCancelButton(false);
@@ -319,13 +319,13 @@ public class MetadataManager {
         return icon;
     }
 
-    private Action createAction(List<Integer> caps, long action, String title, int icon) {
+    private NotificationCompat.Action createAction(List<Integer> caps, long action, String title, int icon) {
         if(!caps.contains((int)action)) return null;
 
-        return new Action(icon, title, MediaButtonReceiver.buildMediaButtonPendingIntent(service, action));
+        return new NotificationCompat.Action(icon, title, MediaButtonReceiver.buildMediaButtonPendingIntent(service, action));
     }
 
-    private void addAction(Action action, long id, List<Integer> compact) {
+    private void addAction(NotificationCompat.Action action, long id, List<Integer> compact) {
         if(action == null) return;
 
         if((compactActions & id) != 0) compact.add(builder.mActions.size());
