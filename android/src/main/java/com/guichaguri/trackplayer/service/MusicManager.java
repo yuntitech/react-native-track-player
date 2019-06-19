@@ -88,7 +88,7 @@ public class MusicManager implements OnAudioFocusChangeListener {
                 .setBufferDurationsMs(minBuffer, maxBuffer, playBuffer, playBuffer * multiplier)
                 .createDefaultLoadControl();
 
-        SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(new DefaultRenderersFactory(service), new DefaultTrackSelector(), control);
+        SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(service,new DefaultTrackSelector(),control);
 
         player.setAudioAttributes(new com.google.android.exoplayer2.audio.AudioAttributes.Builder()
                 .setContentType(C.CONTENT_TYPE_MUSIC).setUsage(C.USAGE_MEDIA).build());

@@ -15,6 +15,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A {@link DataSource} for reading encrypt local files.
@@ -35,8 +37,6 @@ public final class FileDecryptionDataSource implements DataSource {
 
     }
 
-    private final TransferListener<? super FileDecryptionDataSource> listener;
-
     private RandomAccessFile file;
     private Uri uri;
     private long bytesRemaining;
@@ -50,8 +50,7 @@ public final class FileDecryptionDataSource implements DataSource {
     /**
      * @param listener An optional listener.
      */
-    public FileDecryptionDataSource(Context context, TransferListener<? super FileDecryptionDataSource> listener, boolean decrypt) {
-        this.listener = listener;
+    public FileDecryptionDataSource(Context context, TransferListener listener, boolean decrypt) {
         try {
             Field field = context.getClass().getDeclaredField("mTrackPlayer");
             field.setAccessible(true);
@@ -60,6 +59,11 @@ public final class FileDecryptionDataSource implements DataSource {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void addTransferListener(TransferListener transferListener) {
+
     }
 
     @Override
@@ -78,9 +82,6 @@ public final class FileDecryptionDataSource implements DataSource {
         }
 
         opened = true;
-        if (listener != null) {
-            listener.onTransferStart(this, dataSpec);
-        }
 
         return bytesRemaining;
     }
@@ -104,9 +105,6 @@ public final class FileDecryptionDataSource implements DataSource {
 
             if (bytesRead > 0) {
                 bytesRemaining -= bytesRead;
-                if (listener != null) {
-                    listener.onBytesTransferred(this, bytesRead);
-                }
             }
 
             return bytesRead;
@@ -116,6 +114,11 @@ public final class FileDecryptionDataSource implements DataSource {
     @Override
     public Uri getUri() {
         return uri;
+    }
+
+    @Override
+    public Map<String, List<String>> getResponseHeaders() {
+        return null;
     }
 
     @Override
@@ -131,9 +134,6 @@ public final class FileDecryptionDataSource implements DataSource {
             file = null;
             if (opened) {
                 opened = false;
-                if (listener != null) {
-                    listener.onTransferEnd(this);
-                }
             }
         }
     }

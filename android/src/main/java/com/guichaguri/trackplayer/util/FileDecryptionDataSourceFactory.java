@@ -12,7 +12,7 @@ import com.google.android.exoplayer2.upstream.TransferListener;
 
 public final class FileDecryptionDataSourceFactory implements DataSource.Factory {
 
-    private final TransferListener<? super FileDecryptionDataSource> listener;
+    private final TransferListener listener;
     private Context mContext;
     private boolean mDecrypt;
 
@@ -20,7 +20,7 @@ public final class FileDecryptionDataSourceFactory implements DataSource.Factory
         this(context, null, true);
     }
 
-    public FileDecryptionDataSourceFactory(Context context, TransferListener<? super FileDecryptionDataSource> listener, boolean decrypt) {
+    public FileDecryptionDataSourceFactory(Context context, TransferListener listener, boolean decrypt) {
         this.listener = listener;
         this.mContext = context;
         this.mDecrypt = decrypt;
