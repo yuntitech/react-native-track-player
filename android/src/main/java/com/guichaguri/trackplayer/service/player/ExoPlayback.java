@@ -84,7 +84,7 @@ public abstract class ExoPlayback<T extends Player> implements EventListener {
                 lastKnownWindow = player.getCurrentWindowIndex();
                 lastKnownPosition = player.getCurrentPosition();
 
-                player.seekToDefaultPosition(i);
+                seekToDefaultPosition(i);
                 promise.resolve(null);
                 return;
             }
@@ -104,7 +104,7 @@ public abstract class ExoPlayback<T extends Player> implements EventListener {
         lastKnownWindow = player.getCurrentWindowIndex();
         lastKnownPosition = player.getCurrentPosition();
 
-        player.seekToDefaultPosition(prev);
+        seekToDefaultPosition(prev);
         promise.resolve(null);
     }
 
@@ -119,7 +119,7 @@ public abstract class ExoPlayback<T extends Player> implements EventListener {
         lastKnownWindow = player.getCurrentWindowIndex();
         lastKnownPosition = player.getCurrentPosition();
 
-        player.seekToDefaultPosition(next);
+        seekToDefaultPosition(next);
         promise.resolve(null);
     }
 
@@ -299,5 +299,17 @@ public abstract class ExoPlayback<T extends Player> implements EventListener {
     public void onSeekProcessed() {
         // Finished seeking
         manager.onStateChange(12);
+    }
+
+    private void seekToDefaultPosition(int windowIndex) {
+        //https://fabric.io/yunti/android/apps/com.yunti.zzm/issues/5c3d432af8b88c29634c6b2f?time=last-seven-days
+        //先避免上面崩溃，还不知道什么情况下会进入到return
+        Timeline timeline = player.getCurrentTimeline();
+        if (timeline == null
+                || windowIndex < 0
+                || (!timeline.isEmpty() && windowIndex >= timeline.getWindowCount())) {
+            return;
+        }
+        player.seekToDefaultPosition(windowIndex);
     }
 }
