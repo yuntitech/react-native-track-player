@@ -70,7 +70,7 @@ public abstract class ExoPlayback<T extends Player> implements EventListener {
 
     public Track getCurrentTrack() {
         int index = player.getCurrentWindowIndex();
-        return index == C.INDEX_UNSET || index < 0 || index >= queue.size() ? null : queue.get(index);
+        return index == C.INDEX_UNSET || index >= queue.size() ? null : queue.get(index);
     }
 
     public void skip(String id, Promise promise) {
@@ -215,7 +215,8 @@ public abstract class ExoPlayback<T extends Player> implements EventListener {
         Log.d(Utils.LOG, "onPositionDiscontinuity: " + reason);
 
         if(lastKnownWindow != player.getCurrentWindowIndex()) {
-            Track previous = lastKnownWindow == C.INDEX_UNSET ? null : queue.get(lastKnownWindow);
+            Track previous = lastKnownWindow == C.INDEX_UNSET || lastKnownWindow >= queue.size()
+                                ? null : queue.get(lastKnownWindow);
             Track next = getCurrentTrack();
 
             // Track changed because it ended
