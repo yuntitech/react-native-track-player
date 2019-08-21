@@ -29,6 +29,16 @@ public class MusicService extends HeadlessJsTaskService {
     MusicManager manager;
     Handler handler;
 
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Sets the service to foreground with an empty notification
+            startForeground(1, new NotificationCompat.Builder(this,
+                    NotificationChannel.DEFAULT_CHANNEL_ID).build());
+        }
+    }
+
     @Nullable
     @Override
     protected HeadlessJsTaskConfig getTaskConfig(Intent intent) {
@@ -75,14 +85,14 @@ public class MusicService extends HeadlessJsTaskService {
 
             // Checks whether there is a React activity
             if(reactContext == null || !reactContext.hasCurrentActivity()) {
-                String channel = null;
-
-                if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    channel = NotificationChannel.DEFAULT_CHANNEL_ID;
-                }
+//                String channel = null;
+//
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                    channel = NotificationChannel.DEFAULT_CHANNEL_ID;
+//                }
 
                 // Sets the service to foreground with an empty notification
-                startForeground(1, new NotificationCompat.Builder(this, channel).build());
+//                startForeground(1, new NotificationCompat.Builder(this, channel).build());
                 // Stops the service right after
                 stopSelf();
             }
@@ -104,11 +114,11 @@ public class MusicService extends HeadlessJsTaskService {
         if(intent != null && Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
             // Check if the app is on background, then starts a foreground service and then ends it right after
             onStartForeground();
-            
+
             if(manager != null) {
                 MediaButtonReceiver.handleIntent(manager.getMetadata().getSession(), intent);
             }
-            
+
             return START_NOT_STICKY;
         }
 
