@@ -11,9 +11,6 @@
 
 @interface RCT_EXTERN_REMAP_MODULE(TrackPlayerModule, RNTrackPlayer, NSObject)
 
-- (dispatch_queue_t)methodQueue {
-  return dispatch_get_main_queue();
-}
 
 RCT_EXTERN_METHOD(setupPlayer:(NSDictionary *)data
                   resolver:(RCTPromiseResolveBlock)resolve

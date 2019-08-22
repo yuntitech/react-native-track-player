@@ -32,9 +32,7 @@ public class AudioPlayer: AVPlayerWrapperDelegate {
     private var _wrapper: AVPlayerWrapperProtocol
     
     /// The wrapper around the underlying AVPlayer
-    var wrapper: AVPlayerWrapperProtocol {
-        return _wrapper
-    }
+    lazy var wrapper = _wrapper
     
     public let nowPlayingInfoController: NowPlayingInfoControllerProtocol
     public let remoteCommandController: RemoteCommandController

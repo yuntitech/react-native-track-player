@@ -9,7 +9,7 @@ import Foundation
 import AVFoundation
 
 
-protocol AVPlayerWrapperProtocol: class {
+protocol AVPlayerWrapperProtocol {
     
     var state: AVPlayerWrapperState { get }
     
