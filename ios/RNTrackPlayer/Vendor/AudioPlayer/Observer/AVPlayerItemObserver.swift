@@ -23,7 +23,6 @@ protocol AVPlayerItemObserverDelegate: class {
 class AVPlayerItemObserver: NSObject {
     
     private static var context = 0
-    private let main: DispatchQueue = .main
     
     private struct AVPlayerItemKeyPath {
         static let duration = #keyPath(AVPlayerItem.duration)
@@ -47,7 +46,8 @@ class AVPlayerItemObserver: NSObject {
      - parameter item: The player item to observe.
      */
     func startObserving(item: AVPlayerItem) {
-        main.async {
+        DispatchQueue.main.async {[weak self] in
+            guard let `self` = self else { return }
             if self.isObserving {
                 self.stopObservingCurrentItem()
             }
@@ -59,10 +59,14 @@ class AVPlayerItemObserver: NSObject {
     }
     
     func stopObservingCurrentItem() {
-        observingItem?.removeObserver(self, forKeyPath: AVPlayerItemKeyPath.duration, context: &AVPlayerItemObserver.context)
-        observingItem?.removeObserver(self, forKeyPath: AVPlayerItemKeyPath.loadedTimeRanges, context: &AVPlayerItemObserver.context)
-        self.isObserving = false
-        self.observingItem = nil
+        // 修复多线程下移除可能导致 KVO 闪退
+        DispatchQueue.main.async {[weak self] in
+            guard let `self` = self else { return }
+            self.observingItem?.removeObserver(self, forKeyPath: AVPlayerItemKeyPath.duration, context: &AVPlayerItemObserver.context)
+            self.observingItem?.removeObserver(self, forKeyPath: AVPlayerItemKeyPath.loadedTimeRanges, context: &AVPlayerItemObserver.context)
+            self.isObserving = false
+            self.observingItem = nil
+        }
     }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
@@ -76,7 +80,7 @@ class AVPlayerItemObserver: NSObject {
             if let duration = change?[.newKey] as? CMTime {
                 self.delegate?.item(didUpdateDuration: duration.seconds)
             }
-        
+            
         case AVPlayerItemKeyPath.loadedTimeRanges:
             if let ranges = change?[.newKey] as? [NSValue], let duration = ranges.first?.timeRangeValue.duration {
                 self.delegate?.item(didUpdateDuration: duration.seconds)
