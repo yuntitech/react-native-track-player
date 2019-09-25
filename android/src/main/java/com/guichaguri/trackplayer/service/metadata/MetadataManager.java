@@ -304,7 +304,7 @@ public class MetadataManager {
             service.startForeground(1, builder.build());
             isForegroundService = true;
         } else {
-            service.stopForeground(false);
+            service.stopForeground(!session.isActive());
             isForegroundService = false;
         }
     }
