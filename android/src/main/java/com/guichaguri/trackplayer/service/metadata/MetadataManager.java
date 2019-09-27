@@ -47,6 +47,11 @@ public class MetadataManager {
     private SimpleTarget<Bitmap> artworkTarget;
     private NotificationCompat.Builder builder;
     private boolean isForegroundService;
+    private boolean fromUserStop;
+
+    public void setFromUserStop(boolean fromUserStop) {
+        this.fromUserStop = fromUserStop;
+    }
 
     private NotificationCompat.Action previousAction, rewindAction, playAction, pauseAction, stopAction, forwardAction, nextAction;
 
@@ -300,7 +305,7 @@ public class MetadataManager {
     }
 
     private void updateNotification() {
-        if(!isForegroundService) {
+        if(!isForegroundService && !fromUserStop) {
             service.startForeground(1, builder.build());
             isForegroundService = true;
         } else {
