@@ -32,11 +32,6 @@ public class MusicService extends HeadlessJsTaskService {
     @Override
     public void onCreate() {
         super.onCreate();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Sets the service to foreground with an empty notification
-            startForeground(1, new NotificationCompat.Builder(this,
-                    NotificationChannel.DEFAULT_CHANNEL_ID).build());
-        }
     }
 
     @Nullable

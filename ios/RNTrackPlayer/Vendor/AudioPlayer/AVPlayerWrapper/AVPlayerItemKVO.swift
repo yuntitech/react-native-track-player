@@ -6,4 +6,12 @@
 //  Copyright © 2019 David Chavez. All rights reserved.
 //
 
-import Foundation
+import AVKit
+
+class AVPlayerItemKVO: AVPlayerItem {
+  var deinitClosure: (() -> Void)?
+
+  deinit {
+    deinitClosure?()
+  }
+}

@@ -40,6 +40,7 @@
 		9B78A2461F3F12BC002B5E3C /* Track.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78A2451F3F12BC002B5E3C /* Track.swift */; };
 		9B78A2481F3F12C9002B5E3C /* MediaURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B78A2471F3F12C9002B5E3C /* MediaURL.swift */; };
 		9BFC1FDD1F61A8E8008795BF /* Capabilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BFC1FDC1F61A8E8008795BF /* Capabilities.swift */; };
+		CE97D75023408CD100A309B5 /* AVPlayerItemKVO.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE97D74F23408CD100A309B5 /* AVPlayerItemKVO.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -91,6 +92,7 @@
 		9B78A2471F3F12C9002B5E3C /* MediaURL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaURL.swift; sourceTree = "<group>"; };
 		9BFBA4D01F3DFA3F00453D3A /* RNTrackPlayer-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "RNTrackPlayer-Bridging-Header.h"; sourceTree = "<group>"; };
 		9BFC1FDC1F61A8E8008795BF /* Capabilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Capabilities.swift; sourceTree = "<group>"; };
+		CE97D74F23408CD100A309B5 /* AVPlayerItemKVO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVPlayerItemKVO.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -192,6 +194,7 @@
 				9B18C31F226357930019375A /* AVPlayerWrapperState.swift */,
 				9B18C320226357930019375A /* AVPlayerWrapperProtocol.swift */,
 				9B18C321226357930019375A /* AVPlayerWrapper.swift */,
+				CE97D74F23408CD100A309B5 /* AVPlayerItemKVO.swift */,
 				9B18C322226357930019375A /* AVPlayerWrapperDelegate.swift */,
 			);
 			path = AVPlayerWrapper;
@@ -301,6 +304,7 @@
 				9B18C32F226357940019375A /* AVPlayerItemNotificationObserver.swift in Sources */,
 				9B18C32A226357940019375A /* RemoteCommandController.swift in Sources */,
 				9B18C2FA226356560019375A /* SessionCategories.swift in Sources */,
+				CE97D75023408CD100A309B5 /* AVPlayerItemKVO.swift in Sources */,
 				9B78A2481F3F12C9002B5E3C /* MediaURL.swift in Sources */,
 				9B18C338226357940019375A /* AudioPlayer.swift in Sources */,
 				9B18C326226357940019375A /* AudioItem.swift in Sources */,

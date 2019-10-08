@@ -168,10 +168,14 @@ class AVPlayerWrapper: AVPlayerWrapperProtocol {
 
         // Set item
         let currentAsset = AVURLAsset(url: url)
-        let currentItem = AVPlayerItem(asset: currentAsset, automaticallyLoadedAssetKeys: [Constants.assetPlayableKey])
+        let currentItem = AVPlayerItemKVO(asset: currentAsset, automaticallyLoadedAssetKeys: [Constants.assetPlayableKey])
+        currentItem.deinitClosure  = {[weak self] in
+          self?.playerItemObserver.stopObservingCurrentItem()
+        }
         currentItem.preferredForwardBufferDuration = bufferDuration
+        
         avPlayer.replaceCurrentItem(with: currentItem)
-
+        
         // Register for events
         playerTimeObserver.registerForBoundaryTimeEvents()
         playerObserver.startObserving()
