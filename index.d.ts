@@ -21,8 +21,10 @@ declare namespace RNTrackPlayer {
 
   type Handler = (type: EventType, ...args: any[]) => void;
   export function registerEventHandler(handler: Handler): void;
+  type EmitterSubscription = { remove: () => void; };
+  export function addEventListener(type: EventType, listener: (data: any) => void): EmitterSubscription;
 
-  
+
   // General
 
   export interface PlayerOptions {
