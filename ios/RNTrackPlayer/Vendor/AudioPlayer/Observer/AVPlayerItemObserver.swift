@@ -31,7 +31,7 @@ class AVPlayerItemObserver: NSObject {
     
     var isObserving: Bool = false
     
-    weak var observingItem: AVPlayerItem?
+    var observingItem: AVPlayerItem?
     weak var delegate: AVPlayerItemObserverDelegate?
     
     deinit {
