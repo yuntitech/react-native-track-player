@@ -30,7 +30,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 /**
  * @author Guichaguri
  */
-public class MusicModule extends ReactContextBaseJavaModule implements ServiceConnection {
+public class MusicModule extends ReactContextBaseJavaModule implements ServiceConnection, LifecycleEventListener {
 
     private MusicBinder binder;
     private MusicEvents eventHandler;
@@ -39,6 +39,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
 
     public MusicModule(ReactApplicationContext reactContext) {
         super(reactContext);
+        reactContext.addLifecycleEventListener(this);
     }
 
     @Override
@@ -58,7 +59,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     @Override
     public void onCatalystInstanceDestroy() {
         ReactContext context = getReactApplicationContext();
-
+        context.removeLifecycleEventListener(this);
         if(eventHandler != null) {
             LocalBroadcastManager manager = LocalBroadcastManager.getInstance(context);
 
@@ -448,5 +449,18 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     @ReactMethod
     public void getState(final Promise callback) {
         waitForConnection(() -> callback.resolve(binder.getPlayback().getState()));
+    }
+
+    @Override
+    public void onHostResume() {
+    }
+
+    @Override
+    public void onHostPause() {
+    }
+
+    @Override
+    public void onHostDestroy() {
+        this.destroy();
     }
 }
