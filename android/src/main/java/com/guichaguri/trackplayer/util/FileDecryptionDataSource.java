@@ -15,8 +15,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
 
 /**
  * A {@link DataSource} for reading encrypt local files.
@@ -114,11 +112,6 @@ public final class FileDecryptionDataSource implements DataSource {
     @Override
     public Uri getUri() {
         return uri;
-    }
-
-    @Override
-    public Map<String, List<String>> getResponseHeaders() {
-        return null;
     }
 
     @Override
