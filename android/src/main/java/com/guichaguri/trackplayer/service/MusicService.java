@@ -1,22 +1,26 @@
 package com.guichaguri.trackplayer.service;
 
-import android.app.Activity;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 
-import android.support.v4.media.session.MediaSessionCompat;
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.jstasks.HeadlessJsTaskConfig;
+
 import javax.annotation.Nullable;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.media.session.MediaButtonReceiver;
@@ -34,9 +38,29 @@ public class MusicService extends HeadlessJsTaskService {
         super.onCreate();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Sets the service to foreground with an empty notification
-            startForeground(1, new NotificationCompat.Builder(this,
-                    NotificationChannel.DEFAULT_CHANNEL_ID).build());
+            String channelId = createNotificationChannel("bookln_service_730", "MusicService_Background_Service");
+            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId );
+            Notification notification = notificationBuilder.setOngoing(true)
+                    .setPriority(Notification.PRIORITY_MIN)
+                    .setCategory(Notification.CATEGORY_SERVICE)
+                    .build();
+            try {
+                startForeground(1, notification);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private String createNotificationChannel(String channelId,String channelName){
+        NotificationChannel notificationChannel =  new NotificationChannel(channelId,
+                channelName, NotificationManager.IMPORTANCE_NONE);
+        notificationChannel.setLightColor(Color.BLUE);
+        notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+        NotificationManager service = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        service.createNotificationChannel(notificationChannel);
+        return channelId;
     }
 
     @Nullable
