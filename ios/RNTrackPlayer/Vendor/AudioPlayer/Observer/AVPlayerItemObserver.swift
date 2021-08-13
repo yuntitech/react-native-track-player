@@ -35,8 +35,8 @@ class AVPlayerItemObserver: NSObject {
   weak var delegate: AVPlayerItemObserverDelegate?
   
   deinit {
-    if self.isObserving {
-      stopObservingCurrentItem()
+    DispatchQueue.main.async { [weak self] in
+      self?.stopObservingCurrentItem()
     }
   }
   
@@ -46,11 +46,11 @@ class AVPlayerItemObserver: NSObject {
    - parameter item: The player item to observe.
    */
   func startObserving(item: AVPlayerItem) {
-    DispatchQueue.main.async {[weak self] in
+    DispatchQueue.main.async { [weak self] in
       guard let `self` = self else { return }
-      if self.isObserving {
-        self.stopObservingCurrentItem()
-      }
+      
+      self.stopObservingCurrentItem()
+      
       self.isObserving = true
       self.observingItem = item
       item.addObserver(self, forKeyPath: AVPlayerItemKeyPath.duration, options: [.new], context: &AVPlayerItemObserver.context)
@@ -59,10 +59,12 @@ class AVPlayerItemObserver: NSObject {
   }
   
   func stopObservingCurrentItem() {
-    self.observingItem?.removeObserver(self, forKeyPath: AVPlayerItemKeyPath.duration, context: &AVPlayerItemObserver.context)
-    self.observingItem?.removeObserver(self, forKeyPath: AVPlayerItemKeyPath.loadedTimeRanges, context: &AVPlayerItemObserver.context)
-    self.isObserving = false
-    self.observingItem = nil
+    if self.isObserving {
+      self.observingItem?.removeObserver(self, forKeyPath: AVPlayerItemKeyPath.duration, context: &AVPlayerItemObserver.context)
+      self.observingItem?.removeObserver(self, forKeyPath: AVPlayerItemKeyPath.loadedTimeRanges, context: &AVPlayerItemObserver.context)
+      self.isObserving = false
+      self.observingItem = nil
+    }
   } 
   
   override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
