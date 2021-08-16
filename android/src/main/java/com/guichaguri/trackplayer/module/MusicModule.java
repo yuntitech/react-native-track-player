@@ -89,7 +89,7 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
      * Waits for a connection to the service and/or runs the {@link Runnable} in the player thread
      */
     private void waitForConnection(Runnable r) {
-        if(binder != null) {
+        if(null != binder) {
             binder.post(r);
             return;
         } else {

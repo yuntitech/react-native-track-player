@@ -19,7 +19,9 @@ public class MusicBinder extends Binder {
     }
 
     public void post(Runnable r) {
-        service.handler.post(r);
+        if(null != service && null != service.handler){
+            service.handler.post(r);
+        }
     }
 
     public MusicManager getManager() {
