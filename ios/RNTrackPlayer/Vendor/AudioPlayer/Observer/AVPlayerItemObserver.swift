@@ -35,9 +35,7 @@ class AVPlayerItemObserver: NSObject {
   weak var delegate: AVPlayerItemObserverDelegate?
   
   deinit {
-    DispatchQueue.main.async { [weak self] in
-      self?.stopObservingCurrentItem()
-    }
+    stopObservingCurrentItem()
   }
   
   /**
