@@ -5,9 +5,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.media.MediaDescriptionCompat;
 import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.RatingCompat;
 import android.support.v4.media.session.MediaSessionCompat.QueueItem;
+
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.source.dash.DashMediaSource;
@@ -15,10 +16,15 @@ import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource;
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
-import com.google.android.exoplayer2.upstream.*;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DataSpec;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.upstream.RawResourceDataSource;
 import com.google.android.exoplayer2.util.Util;
 import com.guichaguri.trackplayer.service.Utils;
 import com.guichaguri.trackplayer.service.player.LocalPlayback;
+import com.guichaguri.trackplayer.util.FileDecryptionDataSourceFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,7 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static android.support.v4.media.MediaMetadataCompat.*;
+import static android.media.MediaMetadata.METADATA_KEY_MEDIA_URI;
 
 /**
  * @author Guichaguri
@@ -60,6 +66,7 @@ public class Track extends TrackMetadata {
     public Map<String, String> headers;
 
     public final long queueId;
+    public boolean decrypt;
 
     public Track(Context context, Bundle bundle, int ratingType) {
         resourceId = Utils.getRawResourceId(context, bundle, "url");
@@ -81,6 +88,8 @@ public class Track extends TrackMetadata {
 
         contentType = bundle.getString("contentType");
         userAgent = bundle.getString("userAgent");
+        decrypt = bundle.getBoolean("decrypt", true);
+
 
         Bundle httpHeaders = bundle.getBundle("headers");
         if(httpHeaders != null) {
@@ -150,8 +159,11 @@ public class Track extends TrackMetadata {
         } else if(Utils.isLocal(uri)) {
 
             // Creates a local source factory
-            ds = new DefaultDataSourceFactory(ctx, userAgent);
-
+//            ds = new DefaultDataSourceFactory(ctx, userAgent);
+            return new ExtractorMediaSource(uri,
+                    new FileDecryptionDataSourceFactory(ctx.getApplicationContext(), null, decrypt),
+                    new DefaultExtractorsFactory(),
+                    null, null);
         } else {
 
             // Creates a default http source factory, enabling cross protocol redirects
