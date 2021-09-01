@@ -15,6 +15,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -118,7 +119,7 @@ public final class FileDecryptionDataSource implements DataSource {
 
     @Override
     public Map<String, List<String>> getResponseHeaders() {
-        return null;
+        return Collections.emptyMap();
     }
 
     @Override
