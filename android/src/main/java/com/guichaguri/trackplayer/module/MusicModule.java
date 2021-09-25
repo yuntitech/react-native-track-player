@@ -461,6 +461,6 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
 
     @Override
     public void onHostDestroy() {
-        this.destroy();
+        // this.destroy();
     }
 }
