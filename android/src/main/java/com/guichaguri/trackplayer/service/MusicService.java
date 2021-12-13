@@ -38,7 +38,7 @@ public class MusicService extends HeadlessJsTaskService {
         super.onCreate();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Sets the service to foreground with an empty notification
-            String channelId = createNotificationChannel("bookln_service_730", "MusicService_Background_Service");
+            String channelId = createNotificationChannel("bookln_service_730", "音频通知");
             NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId );
             Notification notification = notificationBuilder.setOngoing(true)
                     .setPriority(Notification.PRIORITY_MIN)
