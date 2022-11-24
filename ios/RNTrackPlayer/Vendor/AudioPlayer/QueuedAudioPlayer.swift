@@ -11,25 +11,27 @@ import MediaPlayer
 /**
  An audio player that can keep track of a queue of AudioItems.
  */
-public class QueuedAudioPlayer: AudioPlayer {
+public class QueuedAudioPlayer: AudioPlayer, QueueManagerDelegate {
     
     let queueManager: QueueManager = QueueManager<AudioItem>()
-    
-    /**
-     Set wether the player should automatically play the next song when a song is finished.
-     Default is `true`.
-     */
-    public var automaticallyPlayNextSong: Bool = true
+
+    public override init(nowPlayingInfoController: NowPlayingInfoControllerProtocol = NowPlayingInfoController(), remoteCommandController: RemoteCommandController = RemoteCommandController()) {
+        super.init(nowPlayingInfoController: nowPlayingInfoController, remoteCommandController: remoteCommandController)
+        queueManager.delegate = self
+    }
+
+    /// The repeat mode for the queue player.
+    public var repeatMode: RepeatMode = .off
     
     public override var currentItem: AudioItem? {
-        return queueManager.current
+        queueManager.current
     }
     
     /**
      The index of the current item.
      */
     public var currentIndex: Int {
-        return queueManager.currentIndex
+        queueManager.currentIndex
     }
     
      /**
@@ -37,9 +39,11 @@ public class QueuedAudioPlayer: AudioPlayer {
      */
     public override func stop() {
         super.stop()
+        event.queueIndex.emit(data: (currentIndex, nil))
     }
     
     override func reset() {
+        super.reset()
         queueManager.clearQueue()
     }
     
@@ -47,21 +51,21 @@ public class QueuedAudioPlayer: AudioPlayer {
      All items currently in the queue.
      */
     public var items: [AudioItem] {
-        return queueManager.items
+        queueManager.items
     }
     
     /**
      The previous items held by the queue.
      */
     public var previousItems: [AudioItem] {
-        return queueManager.previousItems
+        queueManager.previousItems
     }
     
     /**
      The upcoming items in the queue.
      */
     public var nextItems: [AudioItem] {
-        return queueManager.nextItems
+        queueManager.nextItems
     }
     
     /**
@@ -85,7 +89,7 @@ public class QueuedAudioPlayer: AudioPlayer {
     public func add(item: AudioItem, playWhenReady: Bool = true) throws {
         if currentItem == nil {
             queueManager.addItem(item)
-            try self.load(item: item, playWhenReady: playWhenReady)
+            try load(item: item, playWhenReady: playWhenReady)
         }
         else {
             queueManager.addItem(item)
@@ -102,7 +106,7 @@ public class QueuedAudioPlayer: AudioPlayer {
     public func add(items: [AudioItem], playWhenReady: Bool = true) throws {
         if currentItem == nil {
             queueManager.addItems(items)
-            try self.load(item: currentItem!, playWhenReady: playWhenReady)
+            try load(item: currentItem!, playWhenReady: playWhenReady)
         }
         else {
             queueManager.addItems(items)
@@ -119,20 +123,33 @@ public class QueuedAudioPlayer: AudioPlayer {
      - throws: `APError`
      */
     public func next() throws {
-        event.playbackEnd.emit(data: .skippedToNext)
-        delegate?.audioPlayer(itemPlaybackEndedWithReason: .skippedToNext)
-        let nextItem = try queueManager.next()
-        try self.load(item: nextItem, playWhenReady: true)
+        let shouldPlayWhenReady = (playerState == .loading) ? willPlayWhenReady : [.buffering, .playing].contains(playerState)
+
+        do {
+            let nextItem = try queueManager.next()
+            event.playbackEnd.emit(data: .skippedToNext)
+            try load(item: nextItem, playWhenReady: shouldPlayWhenReady)
+        } catch APError.QueueError.noNextItem  {
+            if repeatMode == .queue {
+                event.playbackEnd.emit(data: .skippedToNext)
+                try jumpToItem(atIndex: 0, playWhenReady: shouldPlayWhenReady)
+            } else {
+                throw APError.QueueError.noNextItem
+            }
+        } catch {
+            throw error
+        }
     }
     
     /**
      Step to the previous item in the queue.
      */
     public func previous() throws {
-        event.playbackEnd.emit(data: .skippedToPrevious)
-        delegate?.audioPlayer(itemPlaybackEndedWithReason: .skippedToPrevious)
+        let shouldPlayWhenReady = (playerState == .loading) ? willPlayWhenReady : [.buffering, .playing].contains(playerState)
+
         let previousItem = try queueManager.previous()
-        try self.load(item: previousItem, playWhenReady: true)
+        event.playbackEnd.emit(data: .skippedToPrevious)
+        try load(item: previousItem, playWhenReady: shouldPlayWhenReady)
     }
     
     /**
@@ -153,10 +170,15 @@ public class QueuedAudioPlayer: AudioPlayer {
      - throws: `APError`
      */
     public func jumpToItem(atIndex index: Int, playWhenReady: Bool = true) throws {
-        event.playbackEnd.emit(data: .jumpedToIndex)
-        delegate?.audioPlayer(itemPlaybackEndedWithReason: .jumpedToIndex)
-        let item = try queueManager.jump(to: index)
-        try self.load(item: item, playWhenReady: playWhenReady)
+        if (index == currentIndex) {
+            seek(to: 0)
+            playWhenReady ? play() : pause()
+            onCurrentIndexChanged(oldIndex: index, newIndex: index)
+        } else {
+            let item = try queueManager.jump(to: index)
+            event.playbackEnd.emit(data: .jumpedToIndex)
+            try load(item: item, playWhenReady: playWhenReady)
+        }
     }
     
     /**
@@ -166,7 +188,7 @@ public class QueuedAudioPlayer: AudioPlayer {
      - parameter toIndex: The index to move the item to.
      - throws: `APError.QueueError`
      */
-    func moveItem(fromIndex: Int, toIndex: Int) throws {
+    public func moveItem(fromIndex: Int, toIndex: Int) throws {
         try queueManager.moveItem(fromIndex: fromIndex, toIndex: toIndex)
     }
     
@@ -188,9 +210,36 @@ public class QueuedAudioPlayer: AudioPlayer {
     
     override func AVWrapperItemDidPlayToEndTime() {
         super.AVWrapperItemDidPlayToEndTime()
-        if automaticallyPlayNextSong {
-            try? self.next()
+
+        switch repeatMode {
+        case .off:
+            do {
+                let nextItem = try queueManager.next()
+                try load(item: nextItem, playWhenReady: true)
+            } catch {
+                event.queueIndex.emit(data: (currentIndex, nil))
+            }
+        case .track:
+            try? jumpToItem(atIndex: currentIndex, playWhenReady: true)
+        case .queue:
+            do {
+                let nextItem = try queueManager.next()
+                try load(item: nextItem, playWhenReady: true)
+            } catch {
+                try? jumpToItem(atIndex: 0, playWhenReady: true)
+            }
         }
     }
-    
+
+    // MARK: - QueueManagerDelegate
+
+    func onCurrentIndexChanged(oldIndex: Int, newIndex: Int) {
+        // if _currentItem is nil, then this was triggered by a reset. ignore.
+        if currentItem == nil { return }
+        event.queueIndex.emit(data: (oldIndex, newIndex))
+    }
+
+    func onReceivedFirstItem() {
+        event.queueIndex.emit(data: (nil, 0))
+    }
 }

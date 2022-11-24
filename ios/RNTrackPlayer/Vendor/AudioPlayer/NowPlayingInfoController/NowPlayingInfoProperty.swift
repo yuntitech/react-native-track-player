@@ -128,11 +128,7 @@ public enum NowPlayingInfoProperty: NowPlayingInfoKeyValue {
             return MPNowPlayingInfoPropertyAvailableLanguageOptions
             
         case .assetUrl(_):
-            if #available(iOS 10.3, *) {
-                return MPNowPlayingInfoPropertyAssetURL
-            } else {
-                return ""
-            }
+            return MPNowPlayingInfoPropertyAssetURL
         case .chapterCount(_):
             return MPNowPlayingInfoPropertyChapterCount
             
@@ -173,11 +169,7 @@ public enum NowPlayingInfoProperty: NowPlayingInfoKeyValue {
             return MPNowPlayingInfoPropertyPlaybackRate
             
         case .serviceIdentifier(_):
-            if #available(iOS 11.0, *) {
-                return MPNowPlayingInfoPropertyServiceIdentifier
-            } else {
-                return ""
-            }
+            return MPNowPlayingInfoPropertyServiceIdentifier
             
         }
     }
@@ -192,10 +184,7 @@ public enum NowPlayingInfoProperty: NowPlayingInfoKeyValue {
             return options
             
         case .assetUrl(let url):
-            if #available(iOS 10.3, *) {
-                return url
-            }
-            return false
+            return url
             
         case .chapterCount(let count):
             return count != nil ? NSNumber(value: count!) : nil

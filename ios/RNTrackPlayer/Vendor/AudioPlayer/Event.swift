@@ -6,15 +6,19 @@
 //
 
 import Foundation
+import MediaPlayer
 
 extension AudioPlayer {
     
-    public typealias StateChangeEventData = (AudioPlayerState)
-    public typealias PlaybackEndEventData = (PlaybackEndedReason)
-    public typealias SecondElapseEventData = (TimeInterval)
-    public typealias FailEventData = (Error?)
+    public typealias StateChangeEventData = AudioPlayerState
+    public typealias PlaybackEndEventData = PlaybackEndedReason
+    public typealias SecondElapseEventData = TimeInterval
+    public typealias FailEventData = Error?
     public typealias SeekEventData = (seconds: Int, didFinish: Bool)
-    public typealias UpdateDurationEventData = (Double)
+    public typealias UpdateDurationEventData = Double
+    public typealias MetadataEventData = [AVTimedMetadataGroup]
+    public typealias DidRecreateAVPlayerEventData = ()
+    public typealias QueueIndexEventData = (previousIndex: Int?, newIndex: Int?)
     
     public struct EventHolder {
         
@@ -37,7 +41,8 @@ extension AudioPlayer {
         public let secondElapse: AudioPlayer.Event<SecondElapseEventData> = AudioPlayer.Event()
         
         /**
-         Emitted when the player encounters an error.
+         Emitted when the player encounters an error. This will ultimately result in the AVPlayer instance to be recreated.
+         If this event is emitted, it means you will need to load a new item in some way. Calling play() will not resume playback.
          - Important: Remember to dispatch to the main queue if any UI is updated in the event handler.
          */
         public let fail: AudioPlayer.Event<FailEventData> = AudioPlayer.Event()
@@ -53,7 +58,26 @@ extension AudioPlayer {
          - Important: Remember to dispatch to the main queue if any UI is updated in the event handler.
          */
         public let updateDuration: AudioPlayer.Event<UpdateDurationEventData> = AudioPlayer.Event()
+
+        /**
+         Emitted when the player receives metadata.
+         - Important: Remember to dispatch to the main queue if any UI is updated in the event handler.
+         */
+        public let receiveMetadata: AudioPlayer.Event<MetadataEventData> = AudioPlayer.Event()
         
+        /**
+         Emitted when the underlying AVPlayer instance is recreated. Recreation happens if the current player fails.
+         - Important: Remember to dispatch to the main queue if any UI is updated in the event handler.
+         - Note: It can be necessary to set the AVAudioSession's category again when this event is emitted.
+         */
+        public let didRecreateAVPlayer: AudioPlayer.Event<()> = AudioPlayer.Event()
+
+        /**
+         Emitted when a new track starts and the queue index changes.
+         - Important: Remember to dispatch to the main queue if any UI is updated in the event handler.
+         - Note: It is only fired for instances of a QueuedAudioPlayer.
+         */
+        public let queueIndex: AudioPlayer.Event<QueueIndexEventData> = AudioPlayer.Event()
     }
     
     public typealias EventClosure<EventData> = (EventData) -> Void
@@ -66,7 +90,7 @@ extension AudioPlayer {
         
         init<Listener: AnyObject>(listener: Listener, closure: @escaping EventClosure<EventData>) {
             self.listener = listener
-            self.invoke = { [weak listener] (data: EventData) in
+            invoke = { [weak listener] (data: EventData) in
                 guard let _ = listener else {
                     return false
                 }
@@ -109,9 +133,7 @@ extension AudioPlayer {
         func emit(data: EventData) {
             eventQueue.async {
                 self.invokersSemaphore.wait()
-                self.invokers = self.invokers.filter({ (invoker) -> Bool in
-                    return invoker.invoke(data)
-                })
+                self.invokers = self.invokers.filter { $0.invoke(data) }
                 self.invokersSemaphore.signal()
             }
         }
