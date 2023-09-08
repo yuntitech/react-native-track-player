@@ -30,25 +30,31 @@ import androidx.media.session.MediaButtonReceiver;
  */
 public class MusicService extends HeadlessJsTaskService {
 
+    String notificationChannelName = "yunti_music_notification" ;
+
     MusicManager manager;
     Handler handler;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        NotificationCompat.Builder notificationBuilder ;
+        NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Sets the service to foreground with an empty notification
             String channelId = createNotificationChannel("bookln_service_730", "音频通知");
-            NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId );
-            Notification notification = notificationBuilder.setOngoing(true)
-                    .setPriority(Notification.PRIORITY_MIN)
-                    .setCategory(Notification.CATEGORY_SERVICE)
-                    .build();
-            try {
-                startForeground(1, notification);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
+            NotificationChannel channel = new NotificationChannel(channelId,notificationChannelName,manager.IMPORTANCE_HIGH) ;
+            channel.enableLights(true);
+            channel.setShowBadge(true);
+            channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            manager.createNotificationChannel(channel);
+            notificationBuilder = new NotificationCompat.Builder(this, channelId );
+        }else{
+            notificationBuilder = new NotificationCompat.Builder(this) ;
+        }
+        try {
+            startForeground(1, notificationBuilder.build());
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
