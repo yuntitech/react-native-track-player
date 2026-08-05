@@ -19,6 +19,7 @@ public class RNTrackPlayer: RCTEventEmitter {
         player.bufferDuration = 1
         return player
     }()
+    private var autoPauseWorkItem: DispatchWorkItem?
 
     // MARK: - Lifecycle Methods
 
@@ -370,6 +371,25 @@ public class RNTrackPlayer: RCTEventEmitter {
     public func pause(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         print("Pausing playback")
         player.pause()
+        resolve(NSNull())
+    }
+
+    @objc(setAutoPauseTime:resolver:rejecter:)
+    public func setAutoPauseTime(_ seconds: Double, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        autoPauseWorkItem?.cancel()
+        autoPauseWorkItem = nil
+
+        guard seconds > 0 else {
+            resolve(NSNull())
+            return
+        }
+
+        let workItem = DispatchWorkItem { [weak self] in
+            self?.player.pause()
+            self?.autoPauseWorkItem = nil
+        }
+        autoPauseWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds, execute: workItem)
         resolve(NSNull())
     }
 

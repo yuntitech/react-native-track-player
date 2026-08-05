@@ -6,6 +6,8 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.media.RatingCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
@@ -36,6 +38,8 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
     private MusicEvents eventHandler;
     private ArrayDeque<Runnable> initCallbacks = new ArrayDeque<>();
     private boolean connecting = false;
+    private final Handler autoPauseHandler = new Handler(Looper.getMainLooper());
+    private Runnable autoPauseRunnable;
 
     public MusicModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -319,6 +323,26 @@ public class MusicModule extends ReactContextBaseJavaModule implements ServiceCo
             binder.getPlayback().pause();
             callback.resolve(null);
         });
+    }
+
+    @ReactMethod
+    public void setAutoPauseTime(final double seconds, final Promise callback) {
+        if (autoPauseRunnable != null) {
+            autoPauseHandler.removeCallbacks(autoPauseRunnable);
+            autoPauseRunnable = null;
+        }
+
+        if (seconds <= 0) {
+            callback.resolve(null);
+            return;
+        }
+
+        autoPauseRunnable = () -> {
+            autoPauseRunnable = null;
+            waitForConnection(() -> binder.getPlayback().pause());
+        };
+        autoPauseHandler.postDelayed(autoPauseRunnable, (long)(seconds * 1000));
+        callback.resolve(null);
     }
 
     @ReactMethod
